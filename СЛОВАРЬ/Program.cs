@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-using static System.Net.Mime.MediaTypeNames;
-using System.Security.Authentication;
 
 namespace Labirinth
 {
@@ -15,14 +13,14 @@ namespace Labirinth
         {
 
             string path = @"C:\Users\burla\OneDrive\Рабочий стол\Lab.txt";
-            Dictionary<string, string> keyy = new Dictionary<string, string>();
+            Dictionary<string, char> keyy = new Dictionary<string, char>();
 
             Key(path, keyy);
             VivestySlovar(keyy);
 
         }
 
-        static void Key(string path, Dictionary<string, string> keyy)
+        static void Key(string path, Dictionary<string, char> keyy)
         {
 
             string text = File.ReadAllText(path);
@@ -38,7 +36,7 @@ namespace Labirinth
             }
 
             string[] word = new string[words.Length / 2];
-            string[] key = new string[words.Length / 2];
+            char[] key = new char[words.Length / 2];
 
             int i = 0;
             int o = 1;
@@ -53,7 +51,7 @@ namespace Labirinth
                 while (o < words.Length && y < words.Length / 2)
                 {
 
-                    key[y] = words[o];
+                    key[y] = Convert.ToChar(words[o]);
 
                     keyy.Add(word[u], key[y]);
                     y++;
@@ -69,9 +67,9 @@ namespace Labirinth
             }
         }
 
-        static void VivestySlovar(Dictionary<string, string> keyy)
+        static void VivestySlovar(Dictionary<string, char> keyy)
         {
-            foreach (KeyValuePair<string, string> keyandvalue in keyy)
+            foreach (KeyValuePair<string, char> keyandvalue in keyy)
             {
                 Console.WriteLine("Key = {0}, Value = {1}",
                     keyandvalue.Key, keyandvalue.Value);

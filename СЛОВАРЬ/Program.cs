@@ -16,58 +16,27 @@ namespace Labirinth
             Dictionary<string, char> keyy = new Dictionary<string, char>();
 
             Key(path, keyy);
-            VivestySlovar(keyy);
+            PrintDictionary(keyy);
 
         }
 
         static void Key(string path, Dictionary<string, char> keyy)
         {
 
-            string text = File.ReadAllText(path);
-            string text2 = text.Replace("\r\n", " ");
-            string[] words = text2.Split(' ', '\n');
-
+            string[] words = File.ReadAllText(path).Replace("\r\n", " ").Split(' ', '\n');
+            
             for (int p = 0; p < words.Length; p++)
             {
                 if (words[p] == "")
-                {
                     Array.Resize(ref words, p);
-                }
             }
 
-            string[] word = new string[words.Length / 2];
-            char[] key = new char[words.Length / 2];
+            for (int i = 0; i < words.Length; i += 2)
+                keyy.Add(words[i], words[i + 1][0]);
 
-            int i = 0;
-            int o = 1;
-
-            int u = 0;
-            int y = 0;
-
-            while (i < words.Length && u < words.Length / 2)
-            {
-                word[u] = words[i];
-
-                while (o < words.Length && y < words.Length / 2)
-                {
-
-                    key[y] = Convert.ToChar(words[o]);
-
-                    keyy.Add(word[u], key[y]);
-                    y++;
-                    o += 2;
-
-                    break;
-
-                }
-
-                u++;
-                i += 2;
-
-            }
         }
 
-        static void VivestySlovar(Dictionary<string, char> keyy)
+        static void PrintDictionary(Dictionary<string, char> keyy)
         {
             foreach (KeyValuePair<string, char> keyandvalue in keyy)
             {

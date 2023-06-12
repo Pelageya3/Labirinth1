@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using static System.Net.Mime.MediaTypeNames;
-
-namespace Labirinth
+﻿namespace Labirinth
 {
     public struct constants
     {
-    public const string way = "way";
-    public const string wall = "wall";
-    public const string character = "character";
-    public const string win = "win";
+        public const string way = "way";
+        public const string wall = "wall";
+        public const string character = "character";
+        public const string win = "win";
     }
 
     class Program
@@ -23,33 +15,29 @@ namespace Labirinth
 
             string path = @"C:\Users\burla\OneDrive\Рабочий стол\Lab.txt";
 
-            Dictionary<string, char> symbolDictionary = new Dictionary<string, char>();
+            Dictionary<char, string> symbolDictionary = new Dictionary<char, string>();
+            Dictionary<string, char> entitiesDictionary = new Dictionary<string, char>();
 
-            GetKeySymbols(path, symbolDictionary);
-
-            char wall = symbolDictionary["wall"];
-            char way = symbolDictionary["way"];
-            char character = symbolDictionary["character"];
-            char win = symbolDictionary["win"];
+            GetKeySymbols(path, symbolDictionary, entitiesDictionary);
 
             int descriptionSize = symbolDictionary.Count + 1;
-            char[][] labirinth = GetLabirinthFromFile(path, descriptionSize, wall);
+            char[][] labirinth = GetLabirinthFromFile(path, descriptionSize);
 
             int x = descriptionSize;
             int y = 0;
 
-            PrintArr(labirinth, way, wall, character, win, descriptionSize);
-            FindPlayerPosition(ref x, ref y, labirinth, character);
+            PrintArr(labirinth, symbolDictionary, descriptionSize);
+            FindPlayerPosition(ref x, ref y, labirinth, symbolDictionary);
 
             do
             {
-                Win(labirinth, win, descriptionSize);
-                Wasd(ref x, ref y, labirinth, way, wall, character, win, descriptionSize);
+                Win(labirinth, descriptionSize, symbolDictionary);
+                Wasd(ref x, ref y, labirinth, descriptionSize, symbolDictionary, entitiesDictionary);
 
             } while (true);
 
         }
-        static void GetKeySymbols(string path, Dictionary<string, char> symbolDictionary)
+        static void GetKeySymbols(string path, Dictionary<char, string> symbolDictionary, Dictionary<string, char> entitiesDictionary)
         {
 
             string[] symbols = File.ReadAllText(path).Replace("\r\n", " ").Split(' ', '\n');
@@ -64,15 +52,14 @@ namespace Labirinth
 
             for (int y = 0; y < symbols.Length; y += 2)
             {
-                if (!symbolDictionary.ContainsValue(symbols[y + 1][0]))
-                    symbolDictionary.Add(symbols[y], symbols[y + 1][0]);
+                if (!symbolDictionary.ContainsValue(symbols[y + 1]))
+                    symbolDictionary.Add(symbols[y + 1][0], symbols[y]);
+                if (!entitiesDictionary.ContainsValue(symbols[y][0]))
+                    entitiesDictionary.Add(symbols[y], symbols[y + 1][0]);
             }
-
-            //foreach (KeyValuePair<string, char> item in symbolDictionary)
-            //Console.WriteLine(item.Key + " " + item.Value);
         }
 
-        static char[][] GetLabirinthFromFile(string path, int descriptionSize, char wall)
+        static char[][] GetLabirinthFromFile(string path, int descriptionSize)
         {
             string[] textlabirinth = File.ReadAllLines(path);
             char[][] labirinth = new char[textlabirinth.Length][];
@@ -85,14 +72,13 @@ namespace Labirinth
                 for (int b = 0; b < eachline.Length; b++)
                 {
                     labirinth[a][b] = eachline[b];
-
                 }
             }
 
             return labirinth;
         }
 
-        static void PrintArr(char[][] labirinth, char way, char wall, char character, char win, int descriptionSize)
+        static void PrintArr(char[][] labirinth, Dictionary<char, string> symbolDictionary, int descriptionSize)
         {
             int a;
             int b;
@@ -103,47 +89,40 @@ namespace Labirinth
                 for (b = 0; b < labirinth[a].Length; b++)
                 {
                     //if (labirinth[a][0] != wall || labirinth[a][^1] != wall || labirinth[descriptionSize][b] != wall || labirinth[^1][b] != wall)
-
-                    if (labirinth[a][b] == wall)
+                    switch (symbolDictionary[labirinth[a][b]])
                     {
-                        Console.BackgroundColor = ConsoleColor.Green;
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        Console.Write(labirinth[a][b]);
-                        Console.ResetColor();
+                        case constants.wall:
+                            Console.BackgroundColor = ConsoleColor.Green;
+                            Console.ForegroundColor = ConsoleColor.Black;
+                            Console.Write(labirinth[a][b]);
+                            Console.ResetColor();
+                            break;
+
+                        case constants.character:
+                            Console.BackgroundColor = ConsoleColor.Blue;
+                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.Write(labirinth[a][b]);
+                            break;
+
+                        case constants.win:
+                            Console.BackgroundColor = ConsoleColor.Red;
+                            Console.ForegroundColor = ConsoleColor.Black;
+                            Console.Write(labirinth[a][b]);
+                            break;
+
+                        case constants.way:
+                            Console.BackgroundColor = ConsoleColor.Gray;
+                            Console.ForegroundColor = ConsoleColor.Black;
+                            Console.Write(labirinth[a][b]);
+                            Console.ResetColor();
+                            break;
                     }
-
-                    else if (labirinth[a][b] == character)
-                    {
-                        Console.BackgroundColor = ConsoleColor.Gray;
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        Console.Write(labirinth[a][b]);
-                    }
-
-                    else if (labirinth[a][b] == win)
-                    {
-                        Console.BackgroundColor = ConsoleColor.Gray;
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        Console.Write(labirinth[a][b]);
-                    }
-
-                    else if (labirinth[a][b] == way)
-                    {
-                        Console.BackgroundColor = ConsoleColor.Gray;
-                        Console.ForegroundColor = ConsoleColor.Black;
-                        Console.Write(labirinth[a][b]);
-                        Console.ResetColor();
-                    }
-
-                    else { }
-
                 }
-
                 Console.WriteLine();
             }
-
         }
 
-        static void FindPlayerPosition(ref int x, ref int y, char[][] labirinth, char character)
+        static void FindPlayerPosition(ref int x, ref int y, char[][] labirinth, Dictionary<char, string> symbolDictionary)
         {
             for (; x < labirinth.Length; x++)
             {
@@ -151,7 +130,7 @@ namespace Labirinth
 
                 for (y = 0; y < labirinth[x].Length; y++)
                 {
-                    if (labirinth[x][y] == character)
+                    if (symbolDictionary[labirinth[x][y]] == constants.character)
                     {
                         stop_loop = true;
                         break;
@@ -162,7 +141,7 @@ namespace Labirinth
             }
         }
 
-        static int DollarCount(char[][] labirinth, int descriptionSize, char win)
+        static int DollarCount(char[][] labirinth, int descriptionSize, Dictionary<char, string> symbolDictionary)
         {
             int dollar = 0;
 
@@ -170,7 +149,7 @@ namespace Labirinth
             {
                 for (int y = 0; y < labirinth[x].Length; y++)
                 {
-                    if (labirinth[x][y] == win)
+                    if (symbolDictionary[labirinth[x][y]] == constants.win)
                     {
                         dollar += 1;
                     }
@@ -179,15 +158,22 @@ namespace Labirinth
             return dollar;
         }
 
-        static void Win(char[][] labirinth, char win, int descriptionSize)
+        static void Win(char[][] labirinth, int descriptionSize, Dictionary<char, string> symbolDictionary)
         {
-            int dollarcount = DollarCount(labirinth, descriptionSize, win);
+            int dollarcount = DollarCount(labirinth, descriptionSize, symbolDictionary);
             //Console.WriteLine(dollarcount);
             if (dollarcount == 0)
                 Console.WriteLine("Ты выиграл!");
         }
 
-        static void Wasd(ref int x, ref int y, char[][] labirinth, char way, char wall, char character, char win, int descriptionSize)
+        void Swap(ref int firstNumber, ref int secondNumber)
+        {
+            int temporary = firstNumber;
+            firstNumber = secondNumber;
+            secondNumber = temporary;
+        }
+
+        static void Wasd(ref int x, ref int y, char[][] labirinth, int descriptionSize, Dictionary<char, string> symbolDictionary, Dictionary<string, char> entitiesDictionary)
         {
             char wasd = Console.ReadKey().KeyChar;
 
@@ -198,18 +184,18 @@ namespace Labirinth
                 case 'ц':
                 case 'Ц':
 
-                    if (labirinth[x - 1][y] == win)
+                    if (symbolDictionary[labirinth[x - 1][y]] == constants.win)
                     {
                         x -= 1;
-                        labirinth[x][y] = character;
-                        labirinth[x + 1][y] = way;
+                        labirinth[x][y] = entitiesDictionary[constants.character];
+                        labirinth[x + 1][y] = entitiesDictionary[constants.way];
                     }
 
-                    else if (labirinth[x - 1][y] == way)
+                    else if (symbolDictionary[labirinth[x - 1][y]] == constants.way)
                     {
                         x -= 1;
-                        labirinth[x][y] = character;
-                        labirinth[x + 1][y] = way;
+                        labirinth[x][y] = entitiesDictionary[constants.character];
+                        labirinth[x + 1][y] = entitiesDictionary[constants.way];
                     }
 
                     else { }
@@ -221,18 +207,18 @@ namespace Labirinth
                 case 'ф':
                 case 'Ф':
 
-                    if (labirinth[x][y - 1] == win)
+                    if (symbolDictionary[labirinth[x][y - 1]] == constants.win)
                     {
                         y -= 1;
-                        labirinth[x][y] = character;
-                        labirinth[x][y + 1] = way;
+                        labirinth[x][y] = entitiesDictionary[constants.character];
+                        labirinth[x][y + 1] = entitiesDictionary[constants.way];
                     }
 
-                    else if (labirinth[x][y - 1] == way)
+                    else if (symbolDictionary[labirinth[x][y - 1]] == constants.way)
                     {
                         y -= 1;
-                        labirinth[x][y] = character;
-                        labirinth[x][y + 1] = way;
+                        labirinth[x][y] = entitiesDictionary[constants.character];
+                        labirinth[x][y + 1] = entitiesDictionary[constants.way];
                     }
 
                     else { }
@@ -244,18 +230,18 @@ namespace Labirinth
                 case 'ы':
                 case 'Ы':
 
-                    if (labirinth[x + 1][y] == win)
+                    if (symbolDictionary[labirinth[x + 1][y]] == constants.win)
                     {
-                        x += 1;
-                        labirinth[x][y] = character;
-                        labirinth[x - 1][y] = way;
+                        x -= 1;
+                        labirinth[x][y] = entitiesDictionary[constants.character];
+                        labirinth[x - 1][y] = entitiesDictionary[constants.way];
                     }
 
-                    else if (labirinth[x + 1][y] == way)
+                    else if (symbolDictionary[labirinth[x + 1][y]] == constants.way)
                     {
                         x += 1;
-                        labirinth[x][y] = character;
-                        labirinth[x - 1][y] = way;
+                        labirinth[x][y] = entitiesDictionary[constants.character];
+                        labirinth[x - 1][y] = entitiesDictionary[constants.way];
                     }
 
                     else { }
@@ -267,23 +253,23 @@ namespace Labirinth
                 case 'в':
                 case 'В':
 
-                    if (labirinth[x][y + 1] == win)
+                    if (symbolDictionary[labirinth[x][y + 1]] == constants.win)
                     {
                         y += 1;
-                        labirinth[x][y] = character;
-                        labirinth[x][y - 1] = way;
+                        labirinth[x][y] = entitiesDictionary[constants.character];
+                        labirinth[x][y - 1] = entitiesDictionary[constants.way];
                     }
 
-                    else if (labirinth[x][y + 1] == way)
+                    else if (symbolDictionary[labirinth[x][y + 1]] == constants.way)
                     {
                         y += 1;
-                        labirinth[x][y] = character;
-                        labirinth[x][y - 1] = way;
+                        labirinth[x][y] = entitiesDictionary[constants.character];
+                        labirinth[x][y - 1] = entitiesDictionary[constants.way];
                     }
 
                     else { }
-
-                    break;
+               
+                    break; 
 
                 default:
 
@@ -291,15 +277,15 @@ namespace Labirinth
                     Console.Write("Введите корректный символ");
                     Console.ReadKey();
 
-                    break;
+                    break; 
             }
-            Restart(labirinth, way, wall, character, win, descriptionSize);
+            Restart(labirinth, descriptionSize, symbolDictionary);
         }
 
-        static void Restart(char[][] labirinth, char way, char wall, char character, char win, int descriptionSize)
+        static void Restart(char[][] labirinth, int descriptionSize, Dictionary<char, string> symbolDictionary)
         {
             Console.Clear();
-            PrintArr(labirinth, way, wall, character, win, descriptionSize);
+            PrintArr(labirinth, symbolDictionary, descriptionSize);
         }
 
     }
